@@ -94,12 +94,12 @@ input:focus {
 }
 
 .poster {
-    height: 280px;
-    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    height: 320px;
+    background: var(--card);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4rem;
+    overflow: hidden;
 }
 
 .info {

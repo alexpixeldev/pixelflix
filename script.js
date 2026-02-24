@@ -59,7 +59,6 @@ function correctAccentuation(text) {
         "campeao": "Campeão", "campeoes": "Campeões",
         "caido": "Caído", "caidos": "Caídos",
         "entao": "Então",
-        "paixao": "Paixão",
         "relampago": "Relâmpago", "relampagos": "Relâmpagos",
         "garotao": "Garotão", "garotoes": "Garotões",
         "divorcio": "Divórcio",
@@ -117,11 +116,13 @@ async function loadMovies() {
             const playerUrl = decryptData(movie.player_url_enc);
             const originalUrl = decryptData(movie.original_url_enc);
             const title = correctAccentuation(movie.title_raw);
+            const imageUrl = movie.image_url || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1000&auto=format&fit=crop';
             
             return {
                 title: title,
                 url: originalUrl,
-                player_url: playerUrl
+                player_url: playerUrl,
+                image_url: imageUrl
             };
         });
         
@@ -139,7 +140,9 @@ async function loadMovies() {
 function render(items) {
     grid.innerHTML = items.map(m => `
         <div class="card" onclick="openVideoModal('${m.player_url.replace(/'/g, "\\'")}', '${m.title.replace(/'/g, "\\'")}')">
-            <div class="poster">🎬</div>
+            <div class="poster">
+                <img src="${m.image_url}" alt="${m.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+            </div>
             <div class="info">
                 <div class="title">${m.title}</div>
                 <button class="btn" onclick="openVideoModal('${m.player_url.replace(/'/g, "\\'")}', '${m.title.replace(/'/g, "\\'")}'); event.stopPropagation();">Assistir</button>
