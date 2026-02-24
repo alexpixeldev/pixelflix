@@ -1,0 +1,2428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Flix - Catálogo de Filmes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #ff006e;
+            --secondary-color: #00d9ff;
+            --dark-bg: #0a0e27;
+            --card-bg: #1a1f3a;
+            --text-light: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --accent: #ffbe0b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1f3a 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, rgba(255, 0, 110, 0.1) 0%, rgba(0, 217, 255, 0.1) 100%);
+            border-bottom: 2px solid var(--primary-color);
+            padding: 2rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 500px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--secondary-color);
+            border-radius: 50px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: rgba(255, 0, 110, 0.1);
+            border: 1px solid var(--primary-color);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Movie Grid */
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .movie-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-color);
+            box-shadow: 0 15px 40px rgba(255, 0, 110, 0.3);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .movie-poster::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .movie-icon {
+            font-size: 4rem;
+            z-index: 1;
+        }
+
+        .movie-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .movie-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .movie-link {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin-top: auto;
+            border: 2px solid transparent;
+        }
+
+        .movie-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 0, 110, 0.4);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-subtext {
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .logo-icon {
+                font-size: 2rem;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .movie-poster {
+                height: 200px;
+            }
+
+            .movie-icon {
+                font-size: 3rem;
+            }
+
+            .movie-info {
+                padding: 1rem;
+            }
+
+            .movie-title {
+                font-size: 0.9rem;
+            }
+
+            .movie-link {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.85rem;
+            }
+
+            header {
+                padding: 1.5rem 1rem;
+            }
+
+            .stat-item {
+                min-width: 120px;
+                padding: 0.75rem 1rem;
+            }
+
+            .stat-number {
+                font-size: 1.4rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+
+            .movie-poster {
+                height: 180px;
+            }
+
+            .search-input {
+                padding: 0.6rem 1rem 0.6rem 2.2rem;
+                font-size: 0.9rem;
+            }
+
+            .container {
+                padding: 1rem 0.5rem;
+            }
+
+            .stats {
+                gap: 0.5rem;
+            }
+
+            .stat-item {
+                min-width: 100px;
+                padding: 0.6rem 0.8rem;
+            }
+        }
+
+        /* Loading Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .movie-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🎬</span>
+                <span>Pixel Flix</span>
+            </div>
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput" 
+                    placeholder="Pesquise por título do filme..."
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalMovies">0</div>
+                <div class="stat-label">Filmes Totais</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="displayedMovies">0</div>
+                <div class="stat-label">Filmes Exibidos</div>
+            </div>
+        </div>
+
+        <div class="movies-grid" id="moviesGrid">
+            <!-- Movies will be inserted here -->
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">🎥</div>
+            <div class="empty-state-text">Nenhum filme encontrado</div>
+            <div class="empty-state-subtext">Tente ajustar sua busca</div>
+        </div>
+    </div>
+
+    <script>
+        // Movie data embedded in the HTML
+        const moviesData = [
+  {
+    "title": "100 Dias Para Desenhar O Amor",
+    "url": "https://tyflexplayer.online/100-dias-para-desenhar-o-amor/"
+  },
+  {
+    "title": "17 Quebras De Coracao Quando O Amor Cala",
+    "url": "https://tyflexplayer.online/17-quebras-de-coracao-quando-o-amor-cala/"
+  },
+  {
+    "title": "3 2 1 Adeus E Ponto Final",
+    "url": "https://tyflexplayer.online/3-2-1-adeus-e-ponto-final/"
+  },
+  {
+    "title": "99 Amuletos 99 Desilusoes Dublado",
+    "url": "https://tyflexplayer.online/99-amuletos-99-desilusoes-dublado/"
+  },
+  {
+    "title": "A 99a Prova De Um Amor Superado Dublado",
+    "url": "https://tyflexplayer.online/a-99a-prova-de-um-amor-superado-dublado/"
+  },
+  {
+    "title": "A Amante Secreta Do Poderoso Chefao Dublado",
+    "url": "https://tyflexplayer.online/a-amante-secreta-do-poderoso-chefao-dublado/"
+  },
+  {
+    "title": "A Arte De Deixar Ir",
+    "url": "https://tyflexplayer.online/a-arte-de-deixar-ir/"
+  },
+  {
+    "title": "A Arte De Se Libertar",
+    "url": "https://tyflexplayer.online/a-arte-de-se-libertar/"
+  },
+  {
+    "title": "A Ascensao Do Filho Traido",
+    "url": "https://tyflexplayer.online/a-ascensao-do-filho-traido/"
+  },
+  {
+    "title": "A Bencao Do Principe Caido",
+    "url": "https://tyflexplayer.online/a-bencao-do-principe-caido/"
+  },
+  {
+    "title": "A Cada Quinze Dias Te Amo De Novo",
+    "url": "https://tyflexplayer.online/a-cada-quinze-dias-te-amo-de-novo/"
+  },
+  {
+    "title": "A Cancao Da Pomba Cativa",
+    "url": "https://tyflexplayer.online/a-cancao-da-pomba-cativa/"
+  },
+  {
+    "title": "A Chefe Encantadora",
+    "url": "https://tyflexplayer.online/a-chefe-encantadora/"
+  },
+  {
+    "title": "A Cirurgia Da Ultima Chance Dublado",
+    "url": "https://tyflexplayer.online/a-cirurgia-da-ultima-chance-dublado/"
+  },
+  {
+    "title": "A Consorte Do Livro E O Imperador Renascido",
+    "url": "https://tyflexplayer.online/a-consorte-do-livro-e-o-imperador-renascido/"
+  },
+  {
+    "title": "A Conspiracao Entre As Irmas Gemeas Dublado",
+    "url": "https://tyflexplayer.online/a-conspiracao-entre-as-irmas-gemeas-dublado/"
+  },
+  {
+    "title": "A Costureira Do Desejo",
+    "url": "https://tyflexplayer.online/a-costureira-do-desejo/"
+  },
+  {
+    "title": "A Dama Da Fenix Negra",
+    "url": "https://tyflexplayer.online/a-dama-da-fenix-negra/"
+  },
+  {
+    "title": "A Danca Da Rainha Cisne Em Direcao Ao Seu Amor",
+    "url": "https://tyflexplayer.online/a-danca-da-rainha-cisne-em-direcao-ao-seu-amor/"
+  },
+  {
+    "title": "A Diva E Minha Mae",
+    "url": "https://tyflexplayer.online/a-diva-e-minha-mae/"
+  },
+  {
+    "title": "A Docura Amarga De Ve La Divorciada Dublado",
+    "url": "https://tyflexplayer.online/a-docura-amarga-de-ve-la-divorciada-dublado/"
+  },
+  {
+    "title": "A Escolhida Do Herdeiro",
+    "url": "https://tyflexplayer.online/a-escolhida-do-herdeiro/"
+  },
+  {
+    "title": "A Espera Do Vento",
+    "url": "https://tyflexplayer.online/a-espera-do-vento/"
+  },
+  {
+    "title": "A Esposa Virou Rainha Do Triunfo Dublado",
+    "url": "https://tyflexplayer.online/a-esposa-virou-rainha-do-triunfo-dublado/"
+  },
+  {
+    "title": "A Filha Rejeitada Vem Com Forca Milenar",
+    "url": "https://tyflexplayer.online/a-filha-rejeitada-vem-com-forca-milenar/"
+  },
+  {
+    "title": "A Garota Encontra Seu Amor Dublado",
+    "url": "https://tyflexplayer.online/a-garota-encontra-seu-amor-dublado/"
+  },
+  {
+    "title": "A General No Salao De Marmore",
+    "url": "https://tyflexplayer.online/a-general-no-salao-de-marmore/"
+  },
+  {
+    "title": "A Gorda Que Mudou O Destino",
+    "url": "https://tyflexplayer.online/a-gorda-que-mudou-o-destino/"
+  },
+  {
+    "title": "A Herdeira Genia Do Destino",
+    "url": "https://tyflexplayer.online/a-herdeira-genia-do-destino/"
+  },
+  {
+    "title": "A Herdeira Imbativel",
+    "url": "https://tyflexplayer.online/a-herdeira-imbativel/"
+  },
+  {
+    "title": "A Herdeira Implacavel Assume O Trono Dublado",
+    "url": "https://tyflexplayer.online/a-herdeira-implacavel-assume-o-trono-dublado/"
+  },
+  {
+    "title": "A Herdeira Retorna",
+    "url": "https://tyflexplayer.online/a-herdeira-retorna/"
+  },
+  {
+    "title": "A Herdeira Retorna Dublado",
+    "url": "https://tyflexplayer.online/a-herdeira-retorna-dublado/"
+  },
+  {
+    "title": "A Herdeira Retorna V2",
+    "url": "https://tyflexplayer.online/a-herdeira-retorna-v2/"
+  },
+  {
+    "title": "A Irma Voltou Ajoelhem Se Todos Dublado",
+    "url": "https://tyflexplayer.online/a-irma-voltou-ajoelhem-se-todos-dublado/"
+  },
+  {
+    "title": "A Jornada De Um Herdeiro",
+    "url": "https://tyflexplayer.online/a-jornada-de-um-herdeiro/"
+  },
+  {
+    "title": "A Licao Mais Dolorosa",
+    "url": "https://tyflexplayer.online/a-licao-mais-dolorosa/"
+  },
+  {
+    "title": "A Luna Perdida Do Rei Lycan Dublado",
+    "url": "https://tyflexplayer.online/a-luna-perdida-do-rei-lycan-dublado/"
+  },
+  {
+    "title": "A Luz Que Domou O Vilao",
+    "url": "https://tyflexplayer.online/a-luz-que-domou-o-vilao/"
+  },
+  {
+    "title": "A Medica Que Transformou Vidas",
+    "url": "https://tyflexplayer.online/a-medica-que-transformou-vidas/"
+  },
+  {
+    "title": "A Menina Que Fala Com Os Animais Dublado",
+    "url": "https://tyflexplayer.online/a-menina-que-fala-com-os-animais-dublado/"
+  },
+  {
+    "title": "A Menininha Que Domou O Chefe",
+    "url": "https://tyflexplayer.online/a-menininha-que-domou-o-chefe/"
+  },
+  {
+    "title": "A Noite Errada",
+    "url": "https://tyflexplayer.online/a-noite-errada/"
+  },
+  {
+    "title": "A Noiva Do Mafioso",
+    "url": "https://tyflexplayer.online/a-noiva-do-mafioso/"
+  },
+  {
+    "title": "A Noiva Do Mafioso De Volta A Coroa",
+    "url": "https://tyflexplayer.online/a-noiva-do-mafioso-de-volta-a-coroa/"
+  },
+  {
+    "title": "A Noiva Do Mafioso De Volta Dublado",
+    "url": "https://tyflexplayer.online/a-noiva-do-mafioso-de-volta-dublado/"
+  },
+  {
+    "title": "A Noiva Errada Amor Certo",
+    "url": "https://tyflexplayer.online/a-noiva-errada-amor-certo/"
+  },
+  {
+    "title": "A Noiva Trocada Do Rei Alfa",
+    "url": "https://tyflexplayer.online/a-noiva-trocada-do-rei-alfa/"
+  },
+  {
+    "title": "A Noiva Virgem Do Alfav V2",
+    "url": "https://tyflexplayer.online/a-noiva-virgem-do-alfav-v2/"
+  },
+  {
+    "title": "A Obsessao Do Ceo",
+    "url": "https://tyflexplayer.online/a-obsessao-do-ceo/"
+  },
+  {
+    "title": "A Pequena Azarada De Sorte Dublado V2",
+    "url": "https://tyflexplayer.online/a-pequena-azarada-de-sorte-dublado-v2/"
+  },
+  {
+    "title": "A Predileta Maluca",
+    "url": "https://tyflexplayer.online/a-predileta-maluca/"
+  },
+  {
+    "title": "A Princesa Da Nova Familia Dublado",
+    "url": "https://tyflexplayer.online/a-princesa-da-nova-familia-dublado/"
+  },
+  {
+    "title": "A Princesa Esta De Volta Dublado",
+    "url": "https://tyflexplayer.online/a-princesa-esta-de-volta-dublado/"
+  },
+  {
+    "title": "A Prometida Do Principe Vampiro",
+    "url": "https://tyflexplayer.online/a-prometida-do-principe-vampiro/"
+  },
+  {
+    "title": "A Queridinha Do Ceo Dublado",
+    "url": "https://tyflexplayer.online/a-queridinha-do-ceo-dublado/"
+  },
+  {
+    "title": "A Rainha Da Ciencia Deixa O Ex Chocado",
+    "url": "https://tyflexplayer.online/a-rainha-da-ciencia-deixa-o-ex-chocado/"
+  },
+  {
+    "title": "A Rainha Divorciada Da Marinha Desperta",
+    "url": "https://tyflexplayer.online/a-rainha-divorciada-da-marinha-desperta/"
+  },
+  {
+    "title": "A Rainha Do Seculo 21 Dublado",
+    "url": "https://tyflexplayer.online/a-rainha-do-seculo-21-dublado/"
+  },
+  {
+    "title": "A Rainha No Seculo 21",
+    "url": "https://tyflexplayer.online/a-rainha-no-seculo-21/"
+  },
+  {
+    "title": "A Rainha Volta Com Poder Dublado",
+    "url": "https://tyflexplayer.online/a-rainha-volta-com-poder-dublado/"
+  },
+  {
+    "title": "A Revoltada Bilionaria",
+    "url": "https://tyflexplayer.online/a-revoltada-bilionaria/"
+  },
+  {
+    "title": "A Senhora Koi E Indomavel",
+    "url": "https://tyflexplayer.online/a-senhora-koi-e-indomavel/"
+  },
+  {
+    "title": "A Sombra Do Sangue",
+    "url": "https://tyflexplayer.online/a-sombra-do-sangue/"
+  },
+  {
+    "title": "A Sortuda Que O Destino Nao Conseguiu Derrubar",
+    "url": "https://tyflexplayer.online/a-sortuda-que-o-destino-nao-conseguiu-derrubar/"
+  },
+  {
+    "title": "A Splendida Renaescenca Da Ex Esposa",
+    "url": "https://tyflexplayer.online/a-splendida-renaescenca-da-ex-esposa/"
+  },
+  {
+    "title": "A Tentacao Do Meu Escritorio Dublado",
+    "url": "https://tyflexplayer.online/a-tentacao-do-meu-escritorio-dublado/"
+  },
+  {
+    "title": "A Tutora E O Rebelde Dublado",
+    "url": "https://tyflexplayer.online/a-tutora-e-o-rebelde-dublado/"
+  },
+  {
+    "title": "A Ultima Licao Da Avo",
+    "url": "https://tyflexplayer.online/a-ultima-licao-da-avo/"
+  },
+  {
+    "title": "A Ultima Licao Do Desamor",
+    "url": "https://tyflexplayer.online/a-ultima-licao-do-desamor/"
+  },
+  {
+    "title": "A Verdadeira Do Palco",
+    "url": "https://tyflexplayer.online/a-verdadeira-do-palco/"
+  },
+  {
+    "title": "A Verdadeira Herdeira Coloca A Familia Nos Eixos",
+    "url": "https://tyflexplayer.online/a-verdadeira-herdeira-coloca-a-familia-nos-eixos/"
+  },
+  {
+    "title": "A Vinganca Da Filha Libertada Dublado",
+    "url": "https://tyflexplayer.online/a-vinganca-da-filha-libertada-dublado/"
+  },
+  {
+    "title": "A Vinganca Da Herdeira Descartada",
+    "url": "https://tyflexplayer.online/a-vinganca-da-herdeira-descartada/"
+  },
+  {
+    "title": "A Vinganca Da Herdeira Dublado",
+    "url": "https://tyflexplayer.online/a-vinganca-da-herdeira-dublado/"
+  },
+  {
+    "title": "A Vinganca Do Filho Rejeitado",
+    "url": "https://tyflexplayer.online/a-vinganca-do-filho-rejeitado/"
+  },
+  {
+    "title": "A Vinganca Glamourosa",
+    "url": "https://tyflexplayer.online/a-vinganca-glamourosa/"
+  },
+  {
+    "title": "A Virgem E Seu Patrao Rico",
+    "url": "https://tyflexplayer.online/a-virgem-e-seu-patrao-rico/"
+  },
+  {
+    "title": "Acao De Gracas Em Familia Dublado",
+    "url": "https://tyflexplayer.online/acao-de-gracas-em-familia-dublado/"
+  },
+  {
+    "title": "Acorrentada Pelo Amor Dela",
+    "url": "https://tyflexplayer.online/acorrentada-pelo-amor-dela/"
+  },
+  {
+    "title": "Adeus Aos Velhos Sonhos",
+    "url": "https://tyflexplayer.online/adeus-aos-velhos-sonhos/"
+  },
+  {
+    "title": "Adeus Marcia O Imperio Nao E Seu",
+    "url": "https://tyflexplayer.online/adeus-marcia-o-imperio-nao-e-seu/"
+  },
+  {
+    "title": "Adeus Meu Amor",
+    "url": "https://tyflexplayer.online/adeus-meu-amor/"
+  },
+  {
+    "title": "Ajoelhe Se Diante Do Pequeno Milagre",
+    "url": "https://tyflexplayer.online/ajoelhe-se-diante-do-pequeno-milagre/"
+  },
+  {
+    "title": "Alem Do Rio O Fim De Nos",
+    "url": "https://tyflexplayer.online/alem-do-rio-o-fim-de-nos/"
+  },
+  {
+    "title": "Alem Do Trabalho O Amor",
+    "url": "https://tyflexplayer.online/alem-do-trabalho-o-amor/"
+  },
+  {
+    "title": "Alma Dedicada Coracao Quebrado Dublado",
+    "url": "https://tyflexplayer.online/alma-dedicada-coracao-quebrado-dublado/"
+  },
+  {
+    "title": "Almas Trocadas Coracoes Em Chamas",
+    "url": "https://tyflexplayer.online/almas-trocadas-coracoes-em-chamas/"
+  },
+  {
+    "title": "Aluguei Um Marido Bilionario Para O Natal Dublado",
+    "url": "https://tyflexplayer.online/aluguei-um-marido-bilionario-para-o-natal-dublado/"
+  },
+  {
+    "title": "Aluguei Um Marido Bilionario Para O Natal",
+    "url": "https://tyflexplayer.online/aluguei-um-marido-bilionario-para-o-natal/"
+  },
+  {
+    "title": "Amando O Melhor Amigo Do Meu Irmao Dublado",
+    "url": "https://tyflexplayer.online/amando-o-melhor-amigo-do-meu-irmao-dublado/"
+  },
+  {
+    "title": "Amar E Vingar",
+    "url": "https://tyflexplayer.online/amar-e-vingar/"
+  },
+  {
+    "title": "Amava Odiava E Ja Era",
+    "url": "https://tyflexplayer.online/amava-odiava-e-ja-era/"
+  },
+  {
+    "title": "Amiga Falsinha Chegou Sua Vez De Pagar",
+    "url": "https://tyflexplayer.online/amiga-falsinha-chegou-sua-vez-de-pagar/"
+  },
+  {
+    "title": "Amor Apos A Tempestade",
+    "url": "https://tyflexplayer.online/amor-apos-a-tempestade/"
+  },
+  {
+    "title": "Amor Apos As Grades",
+    "url": "https://tyflexplayer.online/amor-apos-as-grades/"
+  },
+  {
+    "title": "Amor Assinado Contrato De Coracoes",
+    "url": "https://tyflexplayer.online/amor-assinado-contrato-de-coracoes/"
+  },
+  {
+    "title": "Amor Calado Odio Findo E O Resto Sem Laco Dublado",
+    "url": "https://tyflexplayer.online/amor-calado-odio-findo-e-o-resto-sem-laco-dublado/"
+  },
+  {
+    "title": "Amor De Espera Na Hora Certa Dublado",
+    "url": "https://tyflexplayer.online/amor-de-espera-na-hora-certa-dublado/"
+  },
+  {
+    "title": "Amor E Arrependimento",
+    "url": "https://tyflexplayer.online/amor-e-arrependimento/"
+  },
+  {
+    "title": "Amor E Odio A Face Da Mentira",
+    "url": "https://tyflexplayer.online/amor-e-odio-a-face-da-mentira/"
+  },
+  {
+    "title": "Amor E Sucesso Tudo Em Maos",
+    "url": "https://tyflexplayer.online/amor-e-sucesso-tudo-em-maos/"
+  },
+  {
+    "title": "Amor E Traicao",
+    "url": "https://tyflexplayer.online/amor-e-traicao/"
+  },
+  {
+    "title": "Amor Em Cinzas Dublado",
+    "url": "https://tyflexplayer.online/amor-em-cinzas-dublado/"
+  },
+  {
+    "title": "Amor Em Retirada Dublado",
+    "url": "https://tyflexplayer.online/amor-em-retirada-dublado/"
+  },
+  {
+    "title": "Amor Em Retirada",
+    "url": "https://tyflexplayer.online/amor-em-retirada/"
+  },
+  {
+    "title": "Amor Em Sono Coracao Partiu",
+    "url": "https://tyflexplayer.online/amor-em-sono-coracao-partiu/"
+  },
+  {
+    "title": "Amor Entre A Nevoa Dublado",
+    "url": "https://tyflexplayer.online/amor-entre-a-nevoa-dublado/"
+  },
+  {
+    "title": "Amor Entre A Nevoa",
+    "url": "https://tyflexplayer.online/amor-entre-a-nevoa/"
+  },
+  {
+    "title": "Amor Escondido Sob O Nome De Primos",
+    "url": "https://tyflexplayer.online/amor-escondido-sob-o-nome-de-primos/"
+  },
+  {
+    "title": "Amor Falso O Preco Do Arrependimento",
+    "url": "https://tyflexplayer.online/amor-falso-o-preco-do-arrependimento/"
+  },
+  {
+    "title": "Amor Falso",
+    "url": "https://tyflexplayer.online/amor-falso/"
+  },
+  {
+    "title": "Amor Jamais Perdeu Para Memoria",
+    "url": "https://tyflexplayer.online/amor-jamais-perdeu-para-memoria/"
+  },
+  {
+    "title": "Amor Na Mesma Alianca",
+    "url": "https://tyflexplayer.online/amor-na-mesma-alianca/"
+  },
+  {
+    "title": "Amor Nao Dito Por Ele",
+    "url": "https://tyflexplayer.online/amor-nao-dito-por-ele/"
+  },
+  {
+    "title": "Amor Proibido Colar Verde",
+    "url": "https://tyflexplayer.online/amor-proibido-colar-verde/"
+  },
+  {
+    "title": "Amor Proibido Vendida Ao Meu Melhor Amigo",
+    "url": "https://tyflexplayer.online/amor-proibido-vendida-ao-meu-melhor-amigo/"
+  },
+  {
+    "title": "Amor Que Nao Volta Mais",
+    "url": "https://tyflexplayer.online/amor-que-nao-volta-mais/"
+  },
+  {
+    "title": "Amor Sem Nome O Retorno Da Rainha Da Mafia",
+    "url": "https://tyflexplayer.online/amor-sem-nome-o-retorno-da-rainha-da-mafia/"
+  },
+  {
+    "title": "Amores Que Nunca Se Cruzaram",
+    "url": "https://tyflexplayer.online/amores-que-nunca-se-cruzaram/"
+  },
+  {
+    "title": "Aniversario Fim Do Amor",
+    "url": "https://tyflexplayer.online/aniversario-fim-do-amor/"
+  },
+  {
+    "title": "Anos 80 A Grande Mudanca Da Esposa Gordinha Dublado",
+    "url": "https://tyflexplayer.online/anos-80-a-grande-mudanca-da-esposa-gordinha-dublado/"
+  },
+  {
+    "title": "Anos No Teclado Poder Nas Maos Dublado",
+    "url": "https://tyflexplayer.online/anos-no-teclado-poder-nas-maos-dublado/"
+  },
+  {
+    "title": "Apaixonada Pela Filha Do Inimigo",
+    "url": "https://tyflexplayer.online/apaixonada-pela-filha-do-inimigo/"
+  },
+  {
+    "title": "Apaixonada Por Um Fazendeiro E Pai Solteiro",
+    "url": "https://tyflexplayer.online/apaixonada-por-um-fazendeiro-e-pai-solteiro/"
+  },
+  {
+    "title": "Apos 6 Anos Ela Me Pediu Em Casamento",
+    "url": "https://tyflexplayer.online/apos-6-anos-ela-me-pediu-em-casamento/"
+  },
+  {
+    "title": "Aquele Que Nunca Esquece",
+    "url": "https://tyflexplayer.online/aquele-que-nunca-esquece/"
+  },
+  {
+    "title": "Asamento Ilusorio O Preco Do Segredo Dublado",
+    "url": "https://tyflexplayer.online/asamento-ilusorio-o-preco-do-segredo-dublado/"
+  },
+  {
+    "title": "Ate Que Encontre Meu Destino",
+    "url": "https://tyflexplayer.online/ate-que-encontre-meu-destino/"
+  },
+  {
+    "title": "Atencao Garotos A Bisavo Chegou Dublado",
+    "url": "https://tyflexplayer.online/atencao-garotos-a-bisavo-chegou-dublado/"
+  },
+  {
+    "title": "Atracao Possessiva",
+    "url": "https://tyflexplayer.online/atracao-possessiva/"
+  },
+  {
+    "title": "Atraida Pela Tentacao Fatal",
+    "url": "https://tyflexplayer.online/atraida-pela-tentacao-fatal/"
+  },
+  {
+    "title": "Baba Para O Meu Valentao",
+    "url": "https://tyflexplayer.online/baba-para-o-meu-valentao/"
+  },
+  {
+    "title": "Batimentos Sob A Mira",
+    "url": "https://tyflexplayer.online/batimentos-sob-a-mira/"
+  },
+  {
+    "title": "Bebe Bilionario Fofura E Fortuna",
+    "url": "https://tyflexplayer.online/bebe-bilionario-fofura-e-fortuna/"
+  },
+  {
+    "title": "Beijando O Irmao Errado",
+    "url": "https://tyflexplayer.online/beijando-o-irmao-errado/"
+  },
+  {
+    "title": "Beijo 11",
+    "url": "https://tyflexplayer.online/beijo-11/"
+  },
+  {
+    "title": "Beijo 12",
+    "url": "https://tyflexplayer.online/beijo-12/"
+  },
+  {
+    "title": "Beijo 13",
+    "url": "https://tyflexplayer.online/beijo-13/"
+  },
+  {
+    "title": "Beijo 14",
+    "url": "https://tyflexplayer.online/beijo-14/"
+  },
+  {
+    "title": "Beijo De Amor",
+    "url": "https://tyflexplayer.online/beijo-de-amor/"
+  },
+  {
+    "title": "Beijo De Boa Noite Meu Marido",
+    "url": "https://tyflexplayer.online/beijo-de-boa-noite-meu-marido/"
+  },
+  {
+    "title": "Beijo De Ventos Nas Rosas",
+    "url": "https://tyflexplayer.online/beijo-de-ventos-nas-rosas/"
+  },
+  {
+    "title": "Beijo Explosivo 10 Dublado",
+    "url": "https://tyflexplayer.online/beijo-explosivo-10-dublado/"
+  },
+  {
+    "title": "Beijo Explosivo Ep 9",
+    "url": "https://tyflexplayer.online/beijo-explosivo-ep-9/"
+  },
+  {
+    "title": "Beijo Explosivo Ep10",
+    "url": "https://tyflexplayer.online/beijo-explosivo-ep10/"
+  },
+  {
+    "title": "Beijo Explosivo Episodio 07",
+    "url": "https://tyflexplayer.online/beijo-explosivo-episodio-07/"
+  },
+  {
+    "title": "Beijo Explosivo Episodio 08",
+    "url": "https://tyflexplayer.online/beijo-explosivo-episodio-08/"
+  },
+  {
+    "title": "Beijo Mortal Amor Vital",
+    "url": "https://tyflexplayer.online/beijo-mortal-amor-vital/"
+  },
+  {
+    "title": "Beleza Perdida Dor Sem Fim",
+    "url": "https://tyflexplayer.online/beleza-perdida-dor-sem-fim/"
+  },
+  {
+    "title": "Bem Vinda A Sua Nova Vida",
+    "url": "https://tyflexplayer.online/bem-vinda-a-sua-nova-vida/"
+  },
+  {
+    "title": "Bisavo De 18 Anos Que Restaurou A Familia",
+    "url": "https://tyflexplayer.online/bisavo-de-18-anos-que-restaurou-a-familia/"
+  },
+  {
+    "title": "Boa Menina Do Daddy Dom Dublado",
+    "url": "https://tyflexplayer.online/boa-menina-do-daddy-dom-dublado/"
+  },
+  {
+    "title": "Cacando Por Amor",
+    "url": "https://tyflexplayer.online/cacando-por-amor/"
+  },
+  {
+    "title": "Campeao Caido De Volta Aos Trilhos",
+    "url": "https://tyflexplayer.online/campeao-caido-de-volta-aos-trilhos/"
+  },
+  {
+    "title": "Capturada Pelo Jogo Dele",
+    "url": "https://tyflexplayer.online/capturada-pelo-jogo-dele/"
+  },
+  {
+    "title": "Casa Com Outra Entao Caso Com Seu Pai Adotivo",
+    "url": "https://tyflexplayer.online/casa-com-outra-entao-caso-com-seu-pai-adotivo/"
+  },
+  {
+    "title": "Casada Contra A Vontade",
+    "url": "https://tyflexplayer.online/casada-contra-a-vontade/"
+  },
+  {
+    "title": "Casada Por Acidente Com O Alfa",
+    "url": "https://tyflexplayer.online/casada-por-acidente-com-o-alfa/"
+  },
+  {
+    "title": "Casados Para Sempre",
+    "url": "https://tyflexplayer.online/casados-para-sempre/"
+  },
+  {
+    "title": "Casal Relampago Nos Anos 80",
+    "url": "https://tyflexplayer.online/casal-relampago-nos-anos-80/"
+  },
+  {
+    "title": "Casamento Frio Paixao Secreta",
+    "url": "https://tyflexplayer.online/casamento-frio-paixao-secreta/"
+  },
+  {
+    "title": "Casamento Relampago Mimada Pelo Bilionario Dublado",
+    "url": "https://tyflexplayer.online/casamento-relampago-mimada-pelo-bilionario-dublado/"
+  },
+  {
+    "title": "Casamento Relampago Na Gravidez",
+    "url": "https://tyflexplayer.online/casamento-relampago-na-gravidez/"
+  },
+  {
+    "title": "Casamento Relampago",
+    "url": "https://tyflexplayer.online/casamento-relampago/"
+  },
+  {
+    "title": "Casamento Trocado Par Ideal",
+    "url": "https://tyflexplayer.online/casamento-trocado-par-ideal/"
+  },
+  {
+    "title": "Casamos E Agora Dublado",
+    "url": "https://tyflexplayer.online/casamos-e-agora-dublado/"
+  },
+  {
+    "title": "Casei Com Um Garotao Apaixonado Dublado",
+    "url": "https://tyflexplayer.online/casei-com-um-garotao-apaixonado-dublado/"
+  },
+  {
+    "title": "Caseira Expulsa A Caipira Retorna Vitoriosa Dublado",
+    "url": "https://tyflexplayer.online/caseira-expulsa-a-caipira-retorna-vitoriosa-dublado/"
+  },
+  {
+    "title": "Caso Encerrado O Retorno Da Rainha Do Direito",
+    "url": "https://tyflexplayer.online/caso-encerrado-o-retorno-da-rainha-do-direito/"
+  },
+  {
+    "title": "Casou Se Pela Irma E Ele Enlouqueceu",
+    "url": "https://tyflexplayer.online/casou-se-pela-irma-e-ele-enlouqueceu/"
+  },
+  {
+    "title": "Ceo Voce Encontrou A Senhora Errada",
+    "url": "https://tyflexplayer.online/ceo-voce-encontrou-a-senhora-errada/"
+  },
+  {
+    "title": "Chamada Pelo Meu Amor Dublado",
+    "url": "https://tyflexplayer.online/chamada-pelo-meu-amor-dublado/"
+  },
+  {
+    "title": "Chefe Fugitivo",
+    "url": "https://tyflexplayer.online/chefe-fugitivo/"
+  },
+  {
+    "title": "Chefe Legista Largou Tudo Dublado",
+    "url": "https://tyflexplayer.online/chefe-legista-largou-tudo-dublado/"
+  },
+  {
+    "title": "Chefe Sua Esposa E Uma Detetive",
+    "url": "https://tyflexplayer.online/chefe-sua-esposa-e-uma-detetive/"
+  },
+  {
+    "title": "Chefe Sua Estagiaria E Sua Esposa Dublado",
+    "url": "https://tyflexplayer.online/chefe-sua-estagiaria-e-sua-esposa-dublado/"
+  },
+  {
+    "title": "Cidade Dos Desejos",
+    "url": "https://tyflexplayer.online/cidade-dos-desejos/"
+  },
+  {
+    "title": "Cinco Anos Preso Por Um Desculpa",
+    "url": "https://tyflexplayer.online/cinco-anos-preso-por-um-desculpa/"
+  },
+  {
+    "title": "Cintilacao Cosmica",
+    "url": "https://tyflexplayer.online/cintilacao-cosmica/"
+  },
+  {
+    "title": "Como Conquistar Um Coroa",
+    "url": "https://tyflexplayer.online/como-conquistar-um-coroa/"
+  },
+  {
+    "title": "Como Domar Um Coroa Dublado",
+    "url": "https://tyflexplayer.online/como-domar-um-coroa-dublado/"
+  },
+  {
+    "title": "Confundiram A Nora Desprezaram A Herdeira",
+    "url": "https://tyflexplayer.online/confundiram-a-nora-desprezaram-a-herdeira/"
+  },
+  {
+    "title": "Contos De Fadas Sao Todos Mentira",
+    "url": "https://tyflexplayer.online/contos-de-fadas-sao-todos-mentira/"
+  },
+  {
+    "title": "Controle Maximo",
+    "url": "https://tyflexplayer.online/controle-maximo/"
+  },
+  {
+    "title": "Convidando A Para Dentro",
+    "url": "https://tyflexplayer.online/convidando-a-para-dentro/"
+  },
+  {
+    "title": "Coracao Dividido Entre Dois Homens",
+    "url": "https://tyflexplayer.online/coracao-dividido-entre-dois-homens/"
+  },
+  {
+    "title": "Coracao Dividido Quando Voce Nao Consegue Escolher",
+    "url": "https://tyflexplayer.online/coracao-dividido-quando-voce-nao-consegue-escolher/"
+  },
+  {
+    "title": "Coracao Queimado Pelo Primeiro Amor",
+    "url": "https://tyflexplayer.online/coracao-queimado-pelo-primeiro-amor/"
+  },
+  {
+    "title": "Coracao Selvagem Amor Primitivo",
+    "url": "https://tyflexplayer.online/coracao-selvagem-amor-primitivo/"
+  },
+  {
+    "title": "Coracao Trocado Alma Perdida",
+    "url": "https://tyflexplayer.online/coracao-trocado-alma-perdida/"
+  },
+  {
+    "title": "Coracoes Opostos Sob O Mesmo Teto",
+    "url": "https://tyflexplayer.online/coracoes-opostos-sob-o-mesmo-teto/"
+  },
+  {
+    "title": "Coracoes Que Batem Juntos",
+    "url": "https://tyflexplayer.online/coracoes-que-batem-juntos/"
+  },
+  {
+    "title": "Coroas Que Se Amam Secretamente",
+    "url": "https://tyflexplayer.online/coroas-que-se-amam-secretamente/"
+  },
+  {
+    "title": "Coroa Apaixonado Pela Jovem Dublado",
+    "url": "https://tyflexplayer.online/coroa-apaixonado-pela-jovem-dublado/"
+  },
+  {
+    "title": "Coroa Apaixonado Pela Jovem",
+    "url": "https://tyflexplayer.online/coroa-apaixonado-pela-jovem/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Empregada",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-empregada/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Empregada Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-empregada-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Jovem",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-jovem/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Jovem Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-jovem-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Por Sua Secretaria Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-por-sua-secretaria-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Por Sua Secretaria",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-por-sua-secretaria/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Camareira Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-camareira-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Camareira",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-camareira/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Babá Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-baba-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Babá",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-baba/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Acompanhante Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-acompanhante-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Acompanhante",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-acompanhante/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Modelo Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-modelo-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Modelo",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-modelo/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota De Programa Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-de-programa-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota De Programa",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-de-programa/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Prostituta Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-prostituta-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Prostituta",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-prostituta/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Pobre Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-pobre-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Pobre",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-pobre/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Jovem Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-jovem-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Jovem",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-jovem/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Bonita Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-bonita-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Bonita",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-bonita/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gostosa Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gostosa-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gostosa",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gostosa/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Sensual Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-sensual-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Sensual",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-sensual/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Sexi Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-sexi-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Sexi",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-sexi/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Sexy Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-sexy-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Sexy",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-sexy/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Deliciosa Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-deliciosa-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Deliciosa",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-deliciosa/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V2",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v2/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V2",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v2/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V3",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v3/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V3",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v3/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V4",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v4/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V4",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v4/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V5",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v5/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V5",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v5/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V6",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v6/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V6",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v6/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V7",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v7/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V7",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v7/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V8",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v8/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V8",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v8/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V9",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v9/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V9",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v9/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V10",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v10/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V10",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v10/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V11",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v11/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V11",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v11/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V12",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v12/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V12",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v12/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V13",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v13/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V13",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v13/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V14",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v14/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V14",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v14/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V15",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v15/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V15",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v15/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V16",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v16/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V16",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v16/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V17",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v17/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V17",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v17/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V18",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v18/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V18",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v18/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V19",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v19/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V19",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v19/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V20",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v20/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V20",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v20/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V21",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v21/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V21",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v21/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V22",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v22/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V22",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v22/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V23",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v23/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V23",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v23/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V24",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v24/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V24",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v24/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V25",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v25/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V25",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v25/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V26",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v26/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V26",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v26/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V27",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v27/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V27",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v27/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V28",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v28/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V28",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v28/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V29",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v29/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V29",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v29/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V30",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v30/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V30",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v30/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V31",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v31/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V31",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v31/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V32",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v32/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V32",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v32/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V33",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v33/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V33",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v33/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V34",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v34/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V34",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v34/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V35",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v35/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V35",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v35/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V36",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v36/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V36",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v36/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V37",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v37/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V37",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v37/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V38",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v38/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V38",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v38/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V39",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v39/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V39",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v39/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V40",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v40/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V40",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v40/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V41",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v41/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V41",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v41/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V42",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v42/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V42",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v42/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V43",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v43/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V43",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v43/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V44",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v44/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V44",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v44/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V45",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v45/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V45",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v45/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V46",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v46/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V46",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v46/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V47",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v47/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V47",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v47/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V48",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v48/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V48",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v48/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V49",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v49/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V49",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v49/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V50",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v50/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V50",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v50/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V51",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v51/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V51",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v51/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V52",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v52/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V52",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v52/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V53",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v53/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V53",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v53/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V54",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v54/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V54",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v54/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V55",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v55/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V55",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v55/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V56",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v56/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V56",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v56/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V57",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v57/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V57",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v57/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V58",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v58/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V58",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v58/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V59",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v59/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V59",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v59/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V60",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v60/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V60",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v60/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V61",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v61/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V61",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v61/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V62",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v62/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V62",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v62/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V63",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v63/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V63",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v63/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V64",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v64/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V64",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v64/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V65",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v65/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V65",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v65/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V66",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v66/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V66",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v66/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V67",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v67/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V67",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v67/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V68",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v68/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V68",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v68/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V69",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v69/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V69",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v69/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V70",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v70/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V70",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v70/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V71",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v71/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V71",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v71/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V72",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v72/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V72",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v72/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V73",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v73/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V73",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v73/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V74",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v74/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V74",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v74/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V75",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v75/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V75",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v75/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V76",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v76/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V76",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v76/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V77",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v77/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V77",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v77/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V78",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v78/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V78",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v78/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V79",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v79/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V79",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v79/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V80",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v80/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V80",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v80/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V81",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v81/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V81",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v81/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V82",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v82/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V82",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v82/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V83",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v83/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V83",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v83/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V84",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v84/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V84",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v84/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V85",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v85/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V85",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v85/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V86",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v86/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V86",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v86/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V87",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v87/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V87",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v87/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V88",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v88/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V88",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v88/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V89",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v89/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V89",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v89/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V90",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v90/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V90",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v90/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V91",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v91/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V91",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v91/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V92",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v92/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V92",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v92/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V93",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v93/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V93",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v93/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V94",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v94/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V94",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v94/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V95",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v95/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V95",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v95/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V96",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v96/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V96",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v96/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V97",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v97/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V97",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v97/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V98",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v98/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V98",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v98/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V99",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v99/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V99",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v99/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V100",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v100/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V100",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v100/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V101",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v101/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V101",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v101/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V102",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v102/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V102",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v102/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V103",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v103/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V103",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v103/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V104",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v104/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V104",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v104/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V105",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v105/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V105",
+    "url": "https://tyflexplayer.online/coroa
+-bilionario-apaixonado-pela-garota-gata-dublado-v105/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V106",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v106/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V106",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v106/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V107",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v107/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V107",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v107/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V108",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v108/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V108",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v108/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V109",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v109/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V109",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v109/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata V110",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-v110/"
+  },
+  {
+    "title": "Coroa Bilionario Apaixonado Pela Garota Gata Dublado V110",
+    "url": "https://tyflexplayer.online/coroa-bilionario-apaixonado-pela-garota-gata-dublado-v110/"
+  },
+  {
+    "title": "Cuidado Eu Sou A Chefona",
+    "url": "https://tyflexplayer.online/cuidado-eu-sou-a-chefona/"
+  },
+  {
+    "title": "Da Sombra A Rainha",
+    "url": "https://tyflexplayer.online/da-sombra-a-rainha/"
+  },
+  {
+    "title": "De Esposa Trofeu A Bilionaria",
+    "url": "https://tyflexplayer.online/de-esposa-trofeu-a-bilionaria/"
+  },
+  {
+    "title": "Desejo Proibido Do Intocavel",
+    "url": "https://tyflexplayer.online/desejo-proibido-do-intocavel/"
+  },
+  {
+    "title": "Do Contrato Ao Coracao",
+    "url": "https://tyflexplayer.online/do-contrato-ao-coracao/"
+  },
+  {
+    "title": "Doce Herdeira Dublado",
+    "url": "https://tyflexplayer.online/doce-herdeira-dublado/"
+  },
+  {
+    "title": "Dublado Campones E Serpentes A Fortuna Vira As Costas",
+    "url": "https://tyflexplayer.online/dublado-campones-e-serpentes-a-fortuna-vira-as-costas/"
+  },
+  {
+    "title": "Dublado Casamento Blindado Um Contrato De Natal",
+    "url": "https://tyflexplayer.online/dublado-casamento-blindado-um-contrato-de-natal/"
+  },
+  {
+    "title": "Dublado Elas Por Elas Divorcio Ou Morte",
+    "url": "https://tyflexplayer.online/dublado-elas-por-elas-divorcio-ou-morte/"
+  },
+  {
+    "title": "Dublado O Retorno Da Garota Banida",
+    "url": "https://tyflexplayer.online/dublado-o-retorno-da-garota-banida/"
+  },
+  {
+    "title": "Dublado O Retorno Da Herdeira Genio",
+    "url": "https://tyflexplayer.online/dublado-o-retorno-da-herdeira-genio/"
+  },
+  {
+    "title": "Dublado O Servente Supremo",
+    "url": "https://tyflexplayer.online/dublado-o-servente-supremo/"
+  },
+  {
+    "title": "Ela Renasceu Ele Correra Atras",
+    "url": "https://tyflexplayer.online/ela-renasceu-ele-correra-atras/"
+  },
+  {
+    "title": "Ele Veio Por Mim",
+    "url": "https://tyflexplayer.online/ele-veio-por-mim/"
+  },
+  {
+    "title": "Fogo Entre Nos Dublado",
+    "url": "https://tyflexplayer.online/fogo-entre-nos-dublado/"
+  },
+  {
+    "title": "Lacos Alem Do Escritorio",
+    "url": "https://tyflexplayer.online/lacos-alem-do-escritorio/"
+  },
+  {
+    "title": "Meu Protetor Meu Pecado Dublado",
+    "url": "https://tyflexplayer.online/meu-protetor-meu-pecado-dublado/"
+  },
+  {
+    "title": "Meu Sugar Baby Bilionario",
+    "url": "https://tyflexplayer.online/meu-sugar-baby-bilionario/"
+  },
+  {
+    "title": "Minha Esposa E Justiceira Inesperada",
+    "url": "https://tyflexplayer.online/minha-esposa-e-justiceira-inesperada/"
+  },
+  {
+    "title": "Mor Por Promessa Acidental Dublado",
+    "url": "https://tyflexplayer.online/mor-por-promessa-acidental-dublado/"
+  },
+  {
+    "title": "Noiva Predestinada Do Rei Alpha Dublado",
+    "url": "https://tyflexplayer.online/noiva-predestinada-do-rei-alpha-dublado/"
+  },
+  {
+    "title": "Nosso Ultimo Desejo",
+    "url": "https://tyflexplayer.online/nosso-ultimo-desejo/"
+  },
+  {
+    "title": "O Amor De Sempre",
+    "url": "https://tyflexplayer.online/o-amor-de-sempre/"
+  },
+  {
+    "title": "O Despertar Da Elisa",
+    "url": "https://tyflexplayer.online/o-despertar-da-elisa/"
+  },
+  {
+    "title": "O Jogo Do Carma",
+    "url": "https://tyflexplayer.online/o-jogo-do-carma/"
+  },
+  {
+    "title": "Ola Mundo",
+    "url": "https://tyflexplayer.online/ola-mundo/"
+  },
+  {
+    "title": "Papai Implacavel Da Mafia",
+    "url": "https://tyflexplayer.online/papai-implacavel-da-mafia/"
+  },
+  {
+    "title": "Professor Pet",
+    "url": "https://tyflexplayer.online/professor-pet/"
+  },
+  {
+    "title": "Quando A Memoria Solta",
+    "url": "https://tyflexplayer.online/quando-a-memoria-solta/"
+  },
+  {
+    "title": "Quando A Promessa Se Rasga",
+    "url": "https://tyflexplayer.online/quando-a-promessa-se-rasga/"
+  },
+  {
+    "title": "Quando O Amor Surge Da Dor",
+    "url": "https://tyflexplayer.online/quando-o-amor-surge-da-dor/"
+  },
+  {
+    "title": "Rainha De Copas",
+    "url": "https://tyflexplayer.online/rainha-de-copas/"
+  },
+  {
+    "title": "Renascida Para Reinar",
+    "url": "https://tyflexplayer.online/renascida-para-reinar/"
+  },
+  {
+    "title": "Sua Primeira Escolha",
+    "url": "https://tyflexplayer.online/sua-primeira-escolha/"
+  },
+  {
+    "title": "Superando Meu Guarda Costas",
+    "url": "https://tyflexplayer.online/superando-meu-guarda-costas/"
+  },
+  {
+    "title": "Um Amor Que Brilha Mais Que O Sol",
+    "url": "https://tyflexplayer.online/um-amor-que-brilha-mais-que-o-sol/"
+  },
+  {
+    "title": "Vicio Proibido",
+    "url": "https://tyflexplayer.online/vicio-proibido/"
+  },
+  {
+    "title": "Voce Era O Meu Destino",
+    "url": "https://tyflexplayer.online/voce-era-o-meu-destino/"
+  }
+];
+
+        const moviesGrid = document.getElementById('moviesGrid');
+        const searchInput = document.getElementById('searchInput');
+        const totalMoviesEl = document.getElementById('totalMovies');
+        const displayedMoviesEl = document.getElementById('displayedMovies');
+        const emptyState = document.getElementById('emptyState');
+
+        function displayMovies(movies) {
+            moviesGrid.innerHTML = '';
+            
+            if (movies.length === 0) {
+                emptyState.style.display = 'block';
+                displayedMoviesEl.textContent = '0';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            
+            movies.forEach(movie => {
+                const card = document.createElement('div');
+                card.className = 'movie-card';
+                card.onclick = () => window.open(movie.url, '_blank');
+
+                card.innerHTML = `
+                    <div class="movie-poster">
+                        <span class="movie-icon">🎬</span>
+                    </div>
+                    <div class="movie-info">
+                        <h3 class="movie-title">${movie.title}</h3>
+                        <a href="${movie.url}" target="_blank" class="movie-link" onclick="event.stopPropagation()">Assistir Agora</a>
+                    </div>
+                `;
+                moviesGrid.appendChild(card);
+            });
+
+            displayedMoviesEl.textContent = movies.length;
+        }
+
+        // Search logic
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            
+            const filteredMovies = moviesData.filter(movie => 
+                movie.title.toLowerCase().includes(searchTerm)
+            );
+
+            displayMovies(filteredMovies);
+        });
+
+        // Initialize
+        totalMoviesEl.textContent = moviesData.length;
+        displayMovies(moviesData);
+    </script>
+</body>
+</html>
